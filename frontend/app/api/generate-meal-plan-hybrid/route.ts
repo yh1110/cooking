@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 		// Build prompt based on available inputs
 		let prompt = `
       栄養バランスの良い1日の献立（朝食、昼食、夕食）を提案してください。
-      必ずJSON形式で回答してください。
+      必ずJSON形式のみで回答してください。
 
       利用可能な情報:
     `;
@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       - カロリーは成人の1日の摂取目安（1800-2200kcal）を考慮する
       - 各料理には簡潔で魅力的な説明を付ける
       - 足りない食材がある場合は、一般的な調味料や基本的な食材（米、卵、調味料など）を追加して良い
+			- 各料理のimageプロパティには料理の雰囲気に沿った画像を生成してURLとして記載すること
 
       栄養バランスの目安:
       - タンパク質: 体重1kgあたり1-1.2g
@@ -104,21 +105,24 @@ export async function POST(request: NextRequest) {
           "ingredients": ["卵", "玉ねぎ", "醤油"],
           "cookingTime": "15分",
           "calories": "350kcal",
-          "description": "ふわふわの卵に玉ねぎの甘味がマッチした和風オムレツ"
+          "description": "ふわふわの卵に玉ねぎの甘味がマッチした和風オムレツ",
+					"image": "(画像のURL)"
         },
         "lunch": {
           "name": "チキン野菜炒め",
           "ingredients": ["鶏肉", "人参", "ピーマン"],
           "cookingTime": "20分",
           "calories": "550kcal",
-          "description": "彩り豊かな野菜と鶏肉のヘルシー炒め"
+          "description": "彩り豊かな野菜と鶏肉のヘルシー炒め",
+					"image": "(画像のURL)"
         },
         "dinner": {
           "name": "豚の生姜焼き",
           "ingredients": ["豚肉", "玉ねぎ", "生姜"],
           "cookingTime": "25分",
           "calories": "650kcal",
-          "description": "ご飯が進む定番の生姜焼き"
+          "description": "ご飯が進む定番の生姜焼き",
+					"image": "(画像のURL)"
         },
         "nutritionSummary": {
           "totalCalories": "1550kcal",
