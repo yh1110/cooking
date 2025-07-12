@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import Image from "next/image"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -22,8 +23,6 @@ import {
   Type,
   Camera,
 } from "lucide-react"
-import { generateMealPlan } from "./actions/generate-meal-plan"
-import { generateMealPlanFromImage } from "./actions/generate-meal-plan-from-image"
 
 interface MealPlan {
   breakfast: {
@@ -101,11 +100,33 @@ export default function MealPlannerApp() {
     try {
       let result: MealPlan
       if (inputMode === "text") {
-        result = await generateMealPlan(ingredients)
+        const response = await fetch("/api/generate-meal-plan", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ingredients }),
+        })
+        
+        if (!response.ok) {
+          throw new Error("献立の生成に失敗しました")
+        }
+        
+        result = await response.json()
       } else {
         const formData = new FormData()
         formData.append("image", uploadedImage!)
-        result = await generateMealPlanFromImage(formData)
+        
+        const response = await fetch("/api/generate-meal-plan-from-image", {
+          method: "POST",
+          body: formData,
+        })
+        
+        if (!response.ok) {
+          throw new Error("画像からの献立生成に失敗しました")
+        }
+        
+        result = await response.json()
       }
       setGeneratedMealPlan(result)
     } catch (error) {
@@ -242,10 +263,12 @@ export default function MealPlannerApp() {
                 <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center">
                   {imagePreview ? (
                     <div className="space-y-4">
-                      <img
+                      <Image
                         src={imagePreview || "/placeholder.svg"}
                         alt="アップロード画像"
-                        className="max-w-full max-h-64 mx-auto rounded-lg"
+                        width={400}
+                        height={256}
+                        className="max-w-full max-h-64 mx-auto rounded-lg object-cover"
                       />
                       <Button
                         onClick={() => {
@@ -331,9 +354,11 @@ export default function MealPlannerApp() {
                 <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
                   <CardContent className="p-0">
                     <div className="relative">
-                      <img
-                        src="/placeholder.svg?height=120&width=200"
+                      <Image
+                        src="/placeholder.svg"
                         alt={generatedMealPlan.breakfast.name}
+                        width={200}
+                        height={120}
                         className="w-full h-32 object-cover rounded-t-lg"
                       />
                       <Badge className="absolute top-2 left-2 bg-orange-500 text-white">朝食</Badge>
@@ -376,9 +401,11 @@ export default function MealPlannerApp() {
                 <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
                   <CardContent className="p-0">
                     <div className="relative">
-                      <img
-                        src="/placeholder.svg?height=120&width=200"
+                      <Image
+                        src="/placeholder.svg"
                         alt={generatedMealPlan.lunch.name}
+                        width={200}
+                        height={120}
                         className="w-full h-32 object-cover rounded-t-lg"
                       />
                       <Badge className="absolute top-2 left-2 bg-blue-500 text-white">昼食</Badge>
@@ -421,9 +448,11 @@ export default function MealPlannerApp() {
                 <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
                   <CardContent className="p-0">
                     <div className="relative">
-                      <img
-                        src="/placeholder.svg?height=120&width=200"
+                      <Image
+                        src="/placeholder.svg"
                         alt={generatedMealPlan.dinner.name}
+                        width={200}
+                        height={120}
                         className="w-full h-32 object-cover rounded-t-lg"
                       />
                       <Badge className="absolute top-2 left-2 bg-purple-500 text-white">夕食</Badge>
