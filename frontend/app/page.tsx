@@ -8,7 +8,6 @@ import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import {
 	ChefHat,
@@ -62,7 +61,7 @@ interface MealPlan {
 }
 
 export default function MealPlannerApp() {
-	const [inputMode, setInputMode] = useState<"text" | "image">("text");
+	const [inputMode, setInputMode] = useState<"text" | "image" | "hybrid">("hybrid");
 	const [ingredients, setIngredients] = useState<string[]>([]);
 	const [currentIngredient, setCurrentIngredient] = useState("");
 	const [uploadedImage, setUploadedImage] = useState<File | null>(null);
@@ -132,6 +131,7 @@ export default function MealPlannerApp() {
 	const handleGenerateMealPlan = async () => {
 		if (inputMode === "text" && ingredients.length === 0) return;
 		if (inputMode === "image" && !uploadedImage) return;
+		if (inputMode === "hybrid" && ingredients.length === 0 && !uploadedImage) return;
 
 		setIsGenerating(true);
 		try {
@@ -150,7 +150,7 @@ export default function MealPlannerApp() {
 				}
 
 				result = await response.json();
-			} else {
+			} else if (inputMode === "image") {
 				const formData = new FormData();
 				formData.append("image", uploadedImage!);
 
@@ -161,6 +161,26 @@ export default function MealPlannerApp() {
 
 				if (!response.ok) {
 					throw new Error("画像からの献立生成に失敗しました");
+				}
+
+				result = await response.json();
+			} else {
+				// Hybrid mode: both text and image
+				const formData = new FormData();
+				if (uploadedImage) {
+					formData.append("image", uploadedImage);
+				}
+				if (ingredients.length > 0) {
+					formData.append("ingredients", JSON.stringify(ingredients));
+				}
+
+				const response = await fetch("/api/generate-meal-plan-hybrid", {
+					method: "POST",
+					body: formData,
+				});
+
+				if (!response.ok) {
+					throw new Error("ハイブリッド献立生成に失敗しました");
 				}
 
 				result = await response.json();
@@ -219,7 +239,7 @@ export default function MealPlannerApp() {
 									initial={{ opacity: 0, y: -10 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.2, duration: 0.6 }}
-									className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent"
+									className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent whitespace-nowrap"
 								>
 									AI献立プランナー
 								</motion.h1>
@@ -227,7 +247,7 @@ export default function MealPlannerApp() {
 									initial={{ opacity: 0 }}
 									animate={{ opacity: 1 }}
 									transition={{ delay: 0.4, duration: 0.6 }}
-									className="text-sm text-muted-foreground"
+									className="text-xs sm:text-sm text-muted-foreground hidden sm:block"
 								>
 									食材からAIが栄養バランス抜群の献立を提案
 								</motion.p>
@@ -263,14 +283,6 @@ export default function MealPlannerApp() {
 								</Button>
 							</motion.div>
 
-							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-								<Avatar className="w-10 h-10 ring-2 ring-orange-500/20">
-									<AvatarImage src="/placeholder.svg?height=40&width=40" />
-									<AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold">
-										田中
-									</AvatarFallback>
-								</Avatar>
-							</motion.div>
 						</motion.div>
 					</div>
 				</motion.div>
@@ -373,16 +385,16 @@ export default function MealPlannerApp() {
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.6, duration: 0.6 }}
 								>
-									<CardTitle className="flex items-center gap-3 text-2xl font-bold">
+									<CardTitle className="flex items-center gap-3 text-lg sm:text-xl md:text-2xl font-bold">
 										<motion.div
 											animate={{ rotate: [0, 360] }}
 											transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
 										>
 											<Sparkles className="w-6 h-6" />
 										</motion.div>
-										AI献立を生成する方法を選択
+										<span className="whitespace-nowrap">AI献立を生成</span>
 									</CardTitle>
-									<p className="text-white/80 mt-2">お好みの方法で食材情報を入力してください</p>
+									<p className="text-white/80 mt-2">テキストと画像を組み合わせて食材情報を入力できます</p>
 								</motion.div>
 							</CardHeader>
 
@@ -392,7 +404,7 @@ export default function MealPlannerApp() {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.8, duration: 0.6 }}
-									className="grid md:grid-cols-2 gap-4"
+									className="grid md:grid-cols-3 gap-4"
 								>
 									<motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
 										<Button
@@ -401,7 +413,7 @@ export default function MealPlannerApp() {
 												resetInputs();
 											}}
 											variant={inputMode === "text" ? "secondary" : "outline"}
-											className={`w-full h-20 text-lg font-semibold transition-all duration-300 ${
+											className={`w-full h-20 text-sm md:text-lg font-semibold transition-all duration-300 ${
 												inputMode === "text"
 													? "bg-white text-purple-600 shadow-lg scale-105"
 													: "bg-white/20 text-white border-white/30 hover:bg-white/30 hover:scale-105"
@@ -409,7 +421,7 @@ export default function MealPlannerApp() {
 										>
 											<div className="flex flex-col items-center gap-2">
 												<Type className="w-6 h-6" />
-												<span>テキストで入力</span>
+												<span>テキストのみ</span>
 												<span className="text-xs opacity-80">食材名を直接入力</span>
 											</div>
 										</Button>
@@ -422,7 +434,7 @@ export default function MealPlannerApp() {
 												resetInputs();
 											}}
 											variant={inputMode === "image" ? "secondary" : "outline"}
-											className={`w-full h-20 text-lg font-semibold transition-all duration-300 ${
+											className={`w-full h-20 text-sm md:text-lg font-semibold transition-all duration-300 ${
 												inputMode === "image"
 													? "bg-white text-purple-600 shadow-lg scale-105"
 													: "bg-white/20 text-white border-white/30 hover:bg-white/30 hover:scale-105"
@@ -430,8 +442,32 @@ export default function MealPlannerApp() {
 										>
 											<div className="flex flex-col items-center gap-2">
 												<Camera className="w-6 h-6" />
-												<span>画像をアップロード</span>
-												<span className="text-xs opacity-80">冷蔵庫の写真から認識</span>
+												<span>画像のみ</span>
+												<span className="text-xs opacity-80">写真から認識</span>
+											</div>
+										</Button>
+									</motion.div>
+
+									<motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+										<Button
+											onClick={() => {
+												setInputMode("hybrid");
+											}}
+											variant={inputMode === "hybrid" ? "secondary" : "outline"}
+											className={`w-full h-20 text-sm md:text-lg font-semibold transition-all duration-300 ${
+												inputMode === "hybrid"
+													? "bg-white text-purple-600 shadow-lg scale-105"
+													: "bg-white/20 text-white border-white/30 hover:bg-white/30 hover:scale-105"
+											}`}
+										>
+											<div className="flex flex-col items-center gap-2">
+												<div className="flex items-center gap-1">
+													<Type className="w-5 h-5" />
+													<Plus className="w-3 h-3" />
+													<Camera className="w-5 h-5" />
+												</div>
+												<span>両方組み合わせ</span>
+												<span className="text-xs opacity-80">テキスト&画像</span>
 											</div>
 										</Button>
 									</motion.div>
@@ -439,7 +475,7 @@ export default function MealPlannerApp() {
 
 								<AnimatePresence mode="wait">
 									{/* Enhanced Text Input Mode */}
-									{inputMode === "text" && (
+									{(inputMode === "text" || inputMode === "hybrid") && (
 										<motion.div
 											key="text-input"
 											initial={{ opacity: 0, x: -20 }}
@@ -525,7 +561,7 @@ export default function MealPlannerApp() {
 									)}
 
 									{/* Enhanced Image Upload Mode */}
-									{inputMode === "image" && (
+									{(inputMode === "image" || inputMode === "hybrid") && (
 										<motion.div
 											key="image-input"
 											initial={{ opacity: 0, x: 20 }}
@@ -660,7 +696,8 @@ export default function MealPlannerApp() {
 								{/* Enhanced Generate Button */}
 								<AnimatePresence>
 									{((inputMode === "text" && ingredients.length > 0) ||
-										(inputMode === "image" && uploadedImage)) && (
+										(inputMode === "image" && uploadedImage) ||
+										(inputMode === "hybrid" && (ingredients.length > 0 || uploadedImage))) && (
 										<motion.div
 											initial={{ opacity: 0, y: 20, scale: 0.9 }}
 											animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1029,13 +1066,17 @@ export default function MealPlannerApp() {
 										<h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
 											{inputMode === "text"
 												? "食材を入力してAI献立を生成しましょう"
-												: "画像をアップロードしてAI献立を生成しましょう"}
+												: inputMode === "image"
+												? "画像をアップロードしてAI献立を生成しましょう"
+												: "食材入力と画像の両方でAI献立を生成しましょう"}
 										</h3>
 
 										<p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
 											{inputMode === "text"
 												? "冷蔵庫にある食材を入力すると、AIが栄養バランスを考慮した献立を瞬時に提案します。料理時間、カロリー、栄養素も計算して表示します。"
-												: "冷蔵庫や食材の画像をアップロードすると、AIが画像から食材を認識して最適な献立を提案します。料理時間、カロリー、栄養素も計算して表示します。"}
+												: inputMode === "image"
+												? "冷蔵庫や食材の画像をアップロードすると、AIが画像から食材を認識して最適な献立を提案します。料理時間、カロリー、栄養素も計算して表示します。"
+												: "テキストで食材を入力し、さらに画像もアップロードすることで、より正確で豊富な食材情報を基にAIが最適な献立を提案します。"}
 										</p>
 									</motion.div>
 
