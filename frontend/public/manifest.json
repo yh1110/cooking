@@ -1,0 +1,104 @@
+{
+  "name": "AI献立プランナー - 栄養バランス抜群の献立をAIが提案",
+  "short_name": "AI献立プランナー",
+  "description": "冷蔵庫の食材や画像から、AIが栄養バランスを考慮した献立を瞬時に生成。料理時間、カロリー、栄養素も計算して表示。健康的な食生活をサポートします。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b35",
+  "orientation": "portrait-primary",
+  "categories": ["food", "health", "lifestyle", "productivity"],
+  "lang": "ja",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "テキストで献立生成",
+      "short_name": "テキスト入力",
+      "description": "食材名を入力してAI献立を生成",
+      "url": "/?mode=text",
+      "icons": [
+        {
+          "src": "/favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
+    },
+    {
+      "name": "画像で献立生成",
+      "short_name": "画像アップロード",
+      "description": "冷蔵庫の写真からAI献立を生成",
+      "url": "/?mode=image",
+      "icons": [
+        {
+          "src": "/favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "AI献立プランナーのメイン画面"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "モバイル版AI献立プランナー"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [],
+  "file_handlers": [],
+  "share_target": {
+    "action": "/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "image",
+          "accept": ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+        }
+      ]
+    }
+  }
+}
