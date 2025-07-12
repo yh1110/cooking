@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -32,7 +32,9 @@ const mealPlanSchema = z.object({
 	}),
 });
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+const openai = new OpenAI({
+	apiKey: process.env.OPENAI_API_KEY || "",
+});
 
 export async function POST(request: NextRequest) {
 	try {
@@ -59,7 +61,6 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 		// Build prompt based on available inputs
 		let prompt = `
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
       }
     `;
 
-		let result;
+		let completion;
 
 		if (imageFile) {
 			// Convert file to base64 if image is provided
@@ -142,21 +143,42 @@ export async function POST(request: NextRequest) {
 			const base64Image = buffer.toString("base64");
 			const mimeType = imageFile.type;
 
-			const imagePart = {
-				inlineData: {
-					data: base64Image,
-					mimeType: mimeType,
-				},
-			};
-
-			result = await model.generateContent([prompt, imagePart]);
+			completion = await openai.chat.completions.create({
+				model: "gpt-4o",
+				messages: [
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: prompt,
+							},
+							{
+								type: "image_url",
+								image_url: {
+									url: `data:${mimeType};base64,${base64Image}`,
+								},
+							},
+						],
+					},
+				],
+				temperature: 0.7,
+			});
 		} else {
 			// Text-only mode
-			result = await model.generateContent(prompt);
+			completion = await openai.chat.completions.create({
+				model: "gpt-4o-mini",
+				messages: [
+					{
+						role: "user",
+						content: prompt,
+					},
+				],
+				temperature: 0.7,
+			});
 		}
 
-		const response = result.response;
-		const text = response.text();
+		const text = completion.choices[0]?.message?.content || "";
 
 		// JSONの抽出
 		const jsonMatch = text.match(/\{[\s\S]*\}/);

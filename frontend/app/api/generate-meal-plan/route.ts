@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -32,7 +32,9 @@ const mealPlanSchema = z.object({
 	}),
 });
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+const openai = new OpenAI({
+	apiKey: process.env.OPENAI_API_KEY || "",
+});
 
 export async function POST(request: NextRequest) {
 	try {
@@ -42,7 +44,6 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "食材のリストが必要です" }, { status: 400 });
 		}
 
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 		const prompt = `
       以下の食材を使って、栄養バランスの良い1日の献立（朝食、昼食、夕食）を提案してください。
@@ -100,9 +101,18 @@ export async function POST(request: NextRequest) {
       }
     `;
 
-		const result = await model.generateContent(prompt);
-		const response = result.response;
-		const text = response.text();
+		const completion = await openai.chat.completions.create({
+			model: "gpt-4o-mini",
+			messages: [
+				{
+					role: "user",
+					content: prompt,
+				},
+			],
+			temperature: 0.7,
+		});
+
+		const text = completion.choices[0]?.message?.content || "";
 
 		// JSONの抽出
 		const jsonMatch = text.match(/\{[\s\S]*\}/);
