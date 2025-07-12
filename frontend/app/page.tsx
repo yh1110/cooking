@@ -37,6 +37,7 @@ interface MealPlan {
 		cookingTime: string;
 		calories: string;
 		description: string;
+		image: string; // Added image property
 	};
 	lunch: {
 		name: string;
@@ -44,6 +45,7 @@ interface MealPlan {
 		cookingTime: string;
 		calories: string;
 		description: string;
+		image: string; // Added image property
 	};
 	dinner: {
 		name: string;
@@ -51,6 +53,7 @@ interface MealPlan {
 		cookingTime: string;
 		calories: string;
 		description: string;
+		image: string; // Added image property
 	};
 	nutritionSummary: {
 		totalCalories: string;
@@ -282,7 +285,6 @@ export default function MealPlannerApp() {
 									<Search className="w-5 h-5" />
 								</Button>
 							</motion.div>
-
 						</motion.div>
 					</div>
 				</motion.div>
@@ -394,7 +396,9 @@ export default function MealPlannerApp() {
 										</motion.div>
 										<span className="whitespace-nowrap">AI献立を生成</span>
 									</CardTitle>
-									<p className="text-white/80 mt-2">テキストと画像を組み合わせて食材情報を入力できます</p>
+									<p className="text-white/80 mt-2">
+										テキストと画像を組み合わせて食材情報を入力できます
+									</p>
 								</motion.div>
 							</CardHeader>
 
@@ -830,7 +834,7 @@ export default function MealPlannerApp() {
 									<CardContent className="p-0">
 										<div className="relative">
 											<Image
-												src="/placeholder.svg"
+												src={generatedMealPlan.breakfast.image}
 												alt={generatedMealPlan.breakfast.name}
 												width={200}
 												height={120}
@@ -886,7 +890,7 @@ export default function MealPlannerApp() {
 									<CardContent className="p-0">
 										<div className="relative">
 											<Image
-												src="/placeholder.svg"
+												src={generatedMealPlan.lunch.image}
 												alt={generatedMealPlan.lunch.name}
 												width={200}
 												height={120}
@@ -938,7 +942,7 @@ export default function MealPlannerApp() {
 									<CardContent className="p-0">
 										<div className="relative">
 											<Image
-												src="/placeholder.svg"
+												src={generatedMealPlan.dinner.image}
 												alt={generatedMealPlan.dinner.name}
 												width={200}
 												height={120}
